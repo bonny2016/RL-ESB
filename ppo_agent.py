@@ -6,6 +6,8 @@ import torch.optim as optim
 from torch.distributions import Categorical
 from config import STATE_DIM, ACTION_DIM, HIDDEN_SIZE, LEARNING_RATE, GAMMA, CLIP_EPS, GAE_LAMBDA, PPO_EPOCHS
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class ActorCritic(nn.Module):
     def __init__(self, state_dim, action_dim, hidden_size):
         super(ActorCritic, self).__init__()
