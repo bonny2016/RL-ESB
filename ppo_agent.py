@@ -29,10 +29,10 @@ class ActorCritic(nn.Module):
         return logits, value
 
     def act(self, state):
-        state_tensor = torch.FloatTensor(state)
+        state_tensor = torch.FloatTensor(state).to(device)
         logits, value = self.forward(state_tensor)
         # Action masking: use the continuous availability features from state[2:]
-        avail = torch.FloatTensor(state[2:])  # shape: [ACTION_DIM]
+        avail = torch.FloatTensor(state[2:]).to(device)  # shape: [ACTION_DIM]
         # Create mask: available if avail >= 0; else 0.
         mask = (avail >= 0).float().to(logits.device)
         very_negative = -1e9
@@ -44,7 +44,7 @@ class ActorCritic(nn.Module):
 
 class PPOAgent:
     def __init__(self, state_dim, action_dim, hidden_size):
-        self.policy = ActorCritic(state_dim, action_dim, hidden_size)
+        self.policy = ActorCritic(state_dim, action_dim, hidden_size).to(device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=LEARNING_RATE)
 
     def compute_advantages(self, rewards, values, dones):
@@ -58,21 +58,21 @@ class PPOAgent:
         return advantages
 
     def update(self, trajectories):
-        states = torch.FloatTensor(np.array([t[0] for t in trajectories]))
-        actions = torch.LongTensor(np.array([t[1] for t in trajectories])).unsqueeze(1)
-        old_log_probs = torch.stack([t[2] for t in trajectories]).detach()
+        states = torch.FloatTensor(np.array([t[0] for t in trajectories])).to(device)
+        actions = torch.LongTensor(np.array([t[1] for t in trajectories])).unsqueeze(1).to(device)
+        old_log_probs = torch.stack([t[2] for t in trajectories]).detach().to(device)
         rewards = [t[3] for t in trajectories]
         dones = [1 if t[4] else 0 for t in trajectories]
 
         with torch.no_grad():
             _, state_values = self.policy(states)
-        state_values = state_values.squeeze().detach().numpy().tolist()
+        state_values = state_values.squeeze().detach().cpu().numpy().tolist()
 
         advantages = self.compute_advantages(rewards, state_values, dones)
-        advantages = torch.FloatTensor(advantages)
+        advantages = torch.FloatTensor(advantages).to(device)
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
-        returns = advantages + torch.FloatTensor(state_values)
+        returns = advantages + torch.FloatTensor(state_values).to(device)
 
         for _ in range(PPO_EPOCHS):
             logits, values = self.policy(states)
