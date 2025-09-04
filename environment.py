@@ -31,6 +31,12 @@ class BusSchedulingEnv:
         self.bus_status = {bus_id: {"location": DEPOT, "next_available_time": OPERATION_START_MIN, "used": False} 
                            for bus_id in range(INITIAL_NUM_BUSES)}
         self.schedule = {bus_id: [] for bus_id in range(INITIAL_NUM_BUSES)}
+        
+        # Define state and action spaces
+        # State: [current_time/T_RANGE, current_line/num_lines] + [availability for each bus]
+        self.observation_space_dim = 2 + INITIAL_NUM_BUSES
+        # Action space is the number of buses that can be assigned
+        self.action_space_dim = INITIAL_NUM_BUSES
 
     def generate_timetable(self):
         events = []
@@ -49,6 +55,24 @@ class BusSchedulingEnv:
                 t += interval
         events.sort(key=lambda e: (e["time"], e["line_id"]))
         return events
+
+    def get_valid_actions(self):
+        """
+        Returns a list of valid bus IDs that can be assigned to the current event.
+        A bus is valid if it will be available by the time of the current event.
+        """
+        if self.current_index >= self.num_events:
+            return []
+            
+        event = self.timetable[self.current_index]
+        event_time = event["time"]
+        
+        valid_actions = []
+        for bus_id in range(INITIAL_NUM_BUSES):
+            if self.bus_status[bus_id]["next_available_time"] <= event_time:
+                valid_actions.append(bus_id)
+                
+        return valid_actions
 
     def reset(self):
         self.current_index = 0
@@ -149,6 +173,10 @@ class BusSchedulingEnv:
 
         info = {"event": event, "deadhead_cost": deadhead_cost, "rn": rn, "penalty_unavail": penalty_unavail, "rk": rk, "chain_bonus": chain_bonus}
         return next_state, step_reward, done, info
+
+    def get_total_buses_used(self):
+        """Returns the total number of buses that were used in the schedule."""
+        return sum(1 for bus_id in self.bus_status if self.bus_status[bus_id]["used"])
 
     def print_and_save(self, text, file):
         """

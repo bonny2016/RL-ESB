@@ -1,0 +1,5 @@
+A2C Evaluation Results:
+Average Reward: 1140.79 ± 48.54
+Average Buses Used: 3.40 ± 0.49
+Best Episode Reward: 1183.68
+Minimum Buses Used: 3

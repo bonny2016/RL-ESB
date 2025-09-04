@@ -1,0 +1,5 @@
+DDQN Evaluation Results:
+Average Reward: 1183.68 ± 0.00
+Average Buses Used: 3.00 ± 0.00
+Best Episode Reward: 1183.68
+Minimum Buses Used: 3

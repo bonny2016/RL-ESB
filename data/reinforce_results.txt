@@ -1,0 +1,5 @@
+REINFORCE Evaluation Results:
+Average Reward: 1072.68 ± 69.38
+Average Buses Used: 4.30 ± 0.90
+Best Episode Reward: 1183.68
+Minimum Buses Used: 3

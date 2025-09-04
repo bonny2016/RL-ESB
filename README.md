@@ -1,25 +1,30 @@
-# Electric Bus Scheduling and Charging Management with Deep Reinforcement Learning
+# Electric Bus Scheduling Optimization with Deep Reinforcement Learning
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.9+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Deep Reinforcement Learning solution for optimizing electric bus fleet scheduling with energy management, time-of-use pricing, and curriculum learning.
+A comprehensive Deep Reinforcement Learning solution for optimizing electric bus fleet scheduling with multiple state-of-the-art algorithms. This project implements and compares four different RL approaches: **PPO**, **DDQN**, **REINFORCE**, and **A2C** for solving the electric bus scheduling problem.
 
 ## 🎯 Features
 
-- **PPO-based DRL Agent**: Proximal Policy Optimization for stable learning
-- **Curriculum Learning**: Progressive training across fleet sizes
-- **Energy Management**: Battery state-of-charge optimization and charging strategies
-- **Time-of-Use Pricing**: Dynamic electricity cost optimization
-- **Real-world Constraints**: Depot scheduling, trip timing, and energy consumption
+- **Multi-Algorithm Implementation**: Compare 4 different RL approaches
+  - **PPO (Proximal Policy Optimization)**: Stable policy gradient method
+  - **DDQN (Double Deep Q-Network)**: Advanced value-based method
+  - **REINFORCE**: Classic policy gradient algorithm
+  - **A2C (Advantage Actor-Critic)**: Actor-critic with advantage estimation
+- **GPU/CPU Support**: Automatic hardware detection and optimization
+- **Comprehensive Comparison**: Side-by-side algorithm performance analysis
+- **Real-world Constraints**: Multi-line bus scheduling with time constraints
+- **Action Masking**: Intelligent constraint handling for valid bus assignments
+- **Reward Engineering**: Multi-objective optimization (fleet size, deadhead costs, chain bonuses)
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 ```bash
-pip install torch numpy pandas matplotlib
+pip install torch numpy matplotlib pandas
 ```
 
 ### Installation
@@ -32,82 +37,183 @@ pip install -r requirements.txt
 
 ### Usage
 
-#### 1. Training with Curriculum Learning
+#### 1. Train Individual Algorithms
 
 ```bash
-python run.py --mode curriculum
+# Train PPO
+python run.py
+
+# Train DDQN  
+python run_ddqn.py
+
+# Train REINFORCE
+python run_reinforce.py
+
+# Train A2C
+python run_a2c.py
 ```
 
-#### 2. Training Standard PPO
+#### 2. Compare All Algorithms
 
 ```bash
-python run.py --mode train --episodes 50000
+# Run comparison analysis and generate plots
+python compare_algorithms.py
 ```
 
-#### 3. Evaluation
+#### 3. Algorithm-Specific Training Scripts
 
 ```bash
-python run.py --mode evaluate --model_path models/model_final.pth
-```
+# PPO with custom parameters
+python run.py --episodes 1000
 
-#### 4. Configuration Validation
+# DDQN with exploration tuning
+python run_ddqn.py
 
-```bash
-python run.py --mode validate
+# REINFORCE policy gradient
+python run_reinforce.py  
+
+# A2C actor-critic
+python run_a2c.py
 ```
 
 ## 📊 Project Structure
 
 ```
-electric-bus-scheduling-drl/
-├── config.py            
-├── run.py
-├── environment.py        
-├── ppo_agent.py          
-├── data/                 # Data files
-│   └── 1111.csv          # Sample timetable (place your CSV here)
-├── models/               # Trained models
-├── requirements.txt      # Python dependencies
-└── README.md            # This file
+RL-ESB/
+├── config.py                    # System configuration and hyperparameters
+├── environment.py               # Bus scheduling environment implementation
+├── 
+├── # Algorithm Implementations
+├── ppo_agent.py                 # Proximal Policy Optimization agent
+├── ddqn_agent.py               # Double Deep Q-Network agent  
+├── reinforce_agent.py          # REINFORCE policy gradient agent
+├── a2c_agent.py                # Advantage Actor-Critic agent
+├──
+├── # Training Scripts  
+├── run.py                      # PPO training and evaluation
+├── run_ddqn.py                 # DDQN training and evaluation
+├── run_reinforce.py            # REINFORCE training and evaluation
+├── run_a2c.py                  # A2C training and evaluation
+├── compare_algorithms.py       # Multi-algorithm comparison and analysis
+├──
+├── data/                       # Results and model storage
+│   ├── *_training.txt          # Training progress logs
+│   ├── *_results.txt           # Evaluation results
+│   ├── *_best_model.pth        # Best trained models
+│   └── figures/                # Training plots and comparisons
+│       ├── *_training_rewards.png
+│       └── algorithm_comparison.png
+├──
+├── requirements.txt            # Python dependencies
+└── README.md                   # This file
 ```
 
 ## 🛠️ Configuration
 
 Edit `config.py` to customize:
 
-- **Fleet Parameters**: Number of buses, battery capacity
-- **Energy Settings**: Consumption rates, charging speeds
-- **Pricing**: Time-of-use electricity rates
-- **RL Hyperparameters**: Learning rate, episodes, network architecture
+- **Bus Lines**: Multiple bus routes with different terminals and schedules
+- **Operation Parameters**: Operating hours (6 AM - 9 PM), trip times, rest periods
+- **Fleet Settings**: Number of available buses, depot configuration
+- **Reward Weights**: Deadhead costs, unused bus penalties, chain bonuses
+- **Algorithm Hyperparameters**: Learning rates, network architectures, training episodes
+
+## 🏆 Algorithm Comparison
+
+| Algorithm | Type | Key Features | Best For |
+|-----------|------|--------------|----------|
+| **PPO** | Policy Gradient | Stable, clipped updates | General purpose, stable training |
+| **DDQN** | Value-based | Experience replay, target network | Sample efficiency, discrete actions |
+| **REINFORCE** | Policy Gradient | Simple, direct optimization | Understanding baselines |
+| **A2C** | Actor-Critic | Advantage estimation, shared features | Reduced variance, faster convergence |
 
 ## 📈 Results
 
 The system learns to:
-- Minimize total fleet size while meeting all trip demands
-- Optimize charging schedules to reduce electricity costs
-- Balance energy consumption with operational constraints
-- Handle scheduling conflicts and peak demand periods
+- **Minimize Fleet Size**: Use fewer buses while meeting all trip demands
+- **Optimize Scheduling**: Reduce deadhead movements between terminals  
+- **Create Efficient Chains**: Assign consecutive trips to same buses on same lines
+- **Handle Constraints**: Respect bus availability and time windows
+- **Balance Trade-offs**: Fleet size vs. operational efficiency
+
+### Performance Metrics
+- **Average Reward**: Overall system performance
+- **Buses Used**: Fleet efficiency (typically 3-9 buses from 10 available)
+- **Training Stability**: Convergence speed and consistency
+- **Solution Quality**: Meeting all trip demands with minimal resources
 
 ## 🔬 Technical Details
 
+### Problem Definition
+- **3 Bus Lines**: Different terminals (Terminal1, Terminal2, Terminal3) with varying schedules
+- **Operation Period**: 15-hour daily operation (6:00 AM - 9:00 PM)
+- **Fleet Management**: 10 available buses, minimize actual usage
+- **Scheduling Constraints**: Bus availability, terminal locations, trip timing
+
 ### Environment State Space
-- Current time and operational status
-- Bus positions and energy levels
-- Trip queue and scheduling information
+- **Time Information**: Normalized current event time and bus line ID
+- **Bus Status**: Availability times for each bus (positive = available, negative = busy)
+- **Location Tracking**: Current terminal positions for deadhead cost calculation
 
 ### Action Space
-- Bus assignments to trips
-- Charging decisions at depot
+- **Bus Assignment**: Select which bus (0-9) to assign to each trip
+- **Action Masking**: Only available buses can be selected
+- **Constraint Handling**: Automatic filtering of invalid assignments
 
-### Reward Function
-- Fleet size minimization
-- Energy cost optimization
-- Constraint violation penalties
-- Time-of-use pricing incentives
+### Reward Function Components
+- **Deadhead Cost**: Penalty for moving empty buses between terminals
+- **Unused Bus Penalty**: Discourage using new buses when used buses are available  
+- **Rest Reward**: Bonus for reusing available buses
+- **Chain Bonus**: Extra reward for consecutive trips on same line
+- **Final Penalty**: Total fleet size minimization at episode end
 
-## 📚 Documentation
+### Algorithm Implementations
 
-For detailed documentation, see the code comments and docstrings in each module.
+#### PPO (Proximal Policy Optimization)
+- **Architecture**: Shared state network + separate actor/critic heads
+- **Features**: Action masking, GAE advantages, clipped policy updates
+- **Stability**: Trust region optimization for consistent learning
+
+#### DDQN (Double Deep Q-Network)  
+- **Architecture**: Separate main and target Q-networks
+- **Features**: Experience replay, ε-greedy exploration, target network updates
+- **Efficiency**: Sample reuse and stable value estimation
+
+#### REINFORCE
+- **Architecture**: Simple policy network with softmax output
+- **Features**: Monte Carlo returns, advantage normalization
+- **Simplicity**: Direct policy gradient optimization
+
+#### A2C (Advantage Actor-Critic)
+- **Architecture**: Shared base + actor/critic heads
+- **Features**: TD advantage estimation, simultaneous policy/value updates
+- **Balance**: Reduced variance while maintaining policy gradient benefits
+
+## � Hardware Support
+
+All algorithms automatically detect and utilize available hardware:
+
+- **GPU Acceleration**: CUDA support for faster training
+- **CPU Fallback**: Automatic CPU usage when GPU unavailable  
+- **Device Logging**: Clear indication of hardware being used
+- **Memory Optimization**: Efficient tensor operations and batch processing
+
+## 📊 Visualization and Analysis
+
+The project generates comprehensive visualizations:
+
+- **Individual Training Curves**: Progress for each algorithm
+- **Comparative Analysis**: Side-by-side performance comparison
+- **Performance Metrics**: Detailed evaluation statistics
+- **Solution Quality**: Bus usage efficiency and constraint satisfaction
+
+## �📚 Documentation
+
+For detailed documentation, see:
+- Code comments and docstrings in each module
+- Algorithm-specific implementation details
+- Environment dynamics and reward engineering
+- Comparison methodology and metrics
 
 ## 🤝 Contributing
 
@@ -127,6 +233,8 @@ Project Link: [https://github.com/meghkc/RL-ESB](https://github.com/meghkc/RL-ES
 
 ## 🙏 Acknowledgments
 
-- Built with PyTorch and NumPy
-- Inspired by advances in deep reinforcement learning for transportation
-- Thanks to the open-source RL community
+- Built with PyTorch for deep learning and GPU acceleration
+- Inspired by advances in deep reinforcement learning for transportation optimization
+- Algorithm implementations based on seminal papers in RL
+- Thanks to the open-source RL community for foundational work
+- Multi-algorithm comparison methodology for comprehensive evaluation
