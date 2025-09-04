@@ -187,3 +187,4 @@ class BusSchedulingEnv:
                 else:
                     self.print_and_save(f"Bus {bus_id} was not used.\n", f)
             self.print_and_save("========================================\n", f)
+
