@@ -8,6 +8,9 @@ from config import STATE_DIM, ACTION_DIM, HIDDEN_SIZE, LEARNING_RATE, GAMMA, CLI
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# For multi-GPU support
+use_data_parallel = torch.cuda.device_count() > 1
+
 class ActorCritic(nn.Module):
     def __init__(self, state_dim, action_dim, hidden_size):
         super(ActorCritic, self).__init__()
@@ -44,8 +47,12 @@ class ActorCritic(nn.Module):
 
 class PPOAgent:
     def __init__(self, state_dim, action_dim, hidden_size):
-        self.policy = ActorCritic(state_dim, action_dim, hidden_size).to(device)
+        policy = ActorCritic(state_dim, action_dim, hidden_size).to(device)
+        if use_data_parallel:
+            policy = nn.DataParallel(policy)
+        self.policy = policy
         self.optimizer = optim.Adam(self.policy.parameters(), lr=LEARNING_RATE)
+        self.scaler = torch.cuda.amp.GradScaler()  # For mixed precision
 
     def compute_advantages(self, rewards, values, dones):
         advantages = []
@@ -75,18 +82,23 @@ class PPOAgent:
         returns = advantages + torch.FloatTensor(state_values).to(device)
 
         for _ in range(PPO_EPOCHS):
-            logits, values = self.policy(states)
-            dist = Categorical(logits=logits)
-            new_log_probs = dist.log_prob(actions.squeeze())
+            with torch.cuda.amp.autocast():
+                logits, values = self.policy(states)
+                dist = Categorical(logits=logits)
+                new_log_probs = dist.log_prob(actions.squeeze())
 
-            ratio = torch.exp(new_log_probs - old_log_probs)
-            surr1 = ratio * advantages
-            surr2 = torch.clamp(ratio, 1 - CLIP_EPS, 1 + CLIP_EPS) * advantages
-            actor_loss = -torch.min(surr1, surr2).mean()
+                ratio = torch.exp(new_log_probs - old_log_probs)
+                surr1 = ratio * advantages
+                surr2 = torch.clamp(ratio, 1 - CLIP_EPS, 1 + CLIP_EPS) * advantages
+                actor_loss = -torch.min(surr1, surr2).mean()
 
-            critic_loss = nn.MSELoss()(values.squeeze(), returns)
-            loss = actor_loss + 0.5 * critic_loss
+                critic_loss = nn.MSELoss()(values.squeeze(), returns)
+                loss = actor_loss + 0.5 * critic_loss
 
             self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+            self.scaler.scale(loss).backward()
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
+
+# Note: For best CPU utilization, set num_workers in your DataLoader (in your training script) to 16-32:
+# dataloader = DataLoader(dataset, batch_size=..., num_workers=16)
