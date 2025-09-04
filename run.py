@@ -2,11 +2,16 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 import os
+import time
 from environment import BusSchedulingEnv
 from ppo_agent import PPOAgent
 from config import STATE_DIM, ACTION_DIM, NUM_EPISODES
 
 def train():
+    # Start timing
+    start_time = time.time()
+    print(f"Starting PPO training at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
+    
     # Clear previous training log
     if not os.path.exists('data'):
         os.makedirs('data')
@@ -44,6 +49,16 @@ def train():
             print(progress, end='')
             with open('data/ppo_training.txt', 'a') as f:
                 f.write(progress)
+    
+    # End timing
+    end_time = time.time()
+    training_time = end_time - start_time
+    print(f"PPO training completed at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
+    print(f"Total PPO training time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)")
+    
+    # Save timing information
+    with open('data/ppo_training.txt', 'a') as f:
+        f.write(f"\nTraining Time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)\n")
     
     return episode_rewards, avg_rewards, agent, env
 

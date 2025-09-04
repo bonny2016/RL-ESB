@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import time
 from environment import BusSchedulingEnv
 from reinforce_agent import REINFORCEAgent
 
@@ -27,6 +28,10 @@ def plot_rewards(rewards, filename):
     plt.close()
 
 def main():
+    # Start timing
+    start_time = time.time()
+    print(f"Starting REINFORCE training at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
+    
     env = BusSchedulingEnv()
     state_dim = env.observation_space_dim
     action_dim = env.action_space_dim
@@ -84,6 +89,16 @@ def main():
     results = f"""REINFORCE Evaluation Results:\nAverage Reward: {np.mean(eval_rewards):.2f} ± {np.std(eval_rewards):.2f}\nAverage Buses Used: {np.mean(total_buses_used):.2f} ± {np.std(total_buses_used):.2f}\nBest Episode Reward: {max(eval_rewards):.2f}\nMinimum Buses Used: {min(total_buses_used)}\n"""
     with open('data/reinforce_results.txt', 'w') as f:
         f.write(results)
+    
+    # End timing
+    end_time = time.time()
+    training_time = end_time - start_time
+    print(f"REINFORCE training completed at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
+    print(f"Total REINFORCE training time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)")
+    
+    # Save timing information
+    with open('data/reinforce_training.txt', 'a') as f:
+        f.write(f"\nTraining Time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)\n")
 
 if __name__ == "__main__":
     main()

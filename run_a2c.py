@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import time
 from environment import BusSchedulingEnv
 from a2c_agent import A2CAgent
 
@@ -30,6 +31,10 @@ def write_results(results, filename):
 
 def main():
     create_results_directory()
+    
+    # Start timing
+    start_time = time.time()
+    print(f"Starting A2C training at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
     
     # Clear previous training log
     with open('data/a2c_training.txt', 'w') as f:
@@ -138,6 +143,16 @@ Best Episode Reward: {max(eval_rewards):.2f}
 Minimum Buses Used: {min(total_buses_used)}
 """
     write_results(results, 'a2c_results.txt')
+    
+    # End timing
+    end_time = time.time()
+    training_time = end_time - start_time
+    print(f"A2C training completed at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
+    print(f"Total A2C training time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)")
+    
+    # Save timing information
+    with open('data/a2c_training.txt', 'a') as f:
+        f.write(f"\nTraining Time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)\n")
     
     print(f"\nA2C Training completed!")
     print(f"Best training reward: {best_reward:.2f}")

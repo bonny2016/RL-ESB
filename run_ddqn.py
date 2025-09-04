@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 from environment import BusSchedulingEnv
 from ddqn_agent import DDQNAgent
 import config
@@ -26,6 +27,11 @@ def write_results(results, filename):
 
 def main():
     create_results_directory()
+    
+    # Start timing
+    start_time = time.time()
+    print(f"Starting DDQN training at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
+    
     env = BusSchedulingEnv()
     
     state_dim = env.observation_space_dim
@@ -114,6 +120,16 @@ Best Episode Reward: {max(eval_rewards):.2f}
 Minimum Buses Used: {min(total_buses_used)}
 """
     write_results(results, 'ddqn_results.txt')
+    
+    # End timing
+    end_time = time.time()
+    training_time = end_time - start_time
+    print(f"DDQN training completed at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}")
+    print(f"Total DDQN training time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)")
+    
+    # Save timing information
+    with open('data/ddqn_training.txt', 'a') as f:
+        f.write(f"\nTraining Time: {training_time:.2f} seconds ({training_time/60:.2f} minutes)\n")
 
 if __name__ == "__main__":
     main()
