@@ -4,7 +4,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.9+-red.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A comprehensive Deep Reinforcement Learning solution for optimizing electric bus fleet scheduling with multiple state-of-the-art algorithms. This project implements and compares four different RL approaches: **PPO**, **DDQN**, **REINFORCE**, and **A2C** for solving the electric bus scheduling problem.
+A comprehensive Deep Reinforcement Learning solution for optimizing electric bus fleet scheduling with multiple state-of-the-art on-p0licy & off-policy algorithms. This project implements and compares four different RL approaches: **PPO**, **DDQN**, **REINFORCE**, and **A2C** for solving the electric bus scheduling problem.
 
 ## 🎯 Features
 
