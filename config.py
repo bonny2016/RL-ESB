@@ -57,7 +57,7 @@ def calculate_max_distance(coords):
             max_dist = max(max_dist, dist)
     return max_dist
 
-MAX_DISTANCE = calculate_max_distance(COORDINATES)
+MAX_DISTANCE = calculate_max_distance(COORDINATES) 
 
 # ---------------------
 # RL and PPO Hyperparameters

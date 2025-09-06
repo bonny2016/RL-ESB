@@ -6,7 +6,7 @@ from config import (OPERATION_START_MIN, OPERATION_END_MIN, T_RANGE, BUS_LINES, 
                     STATE_DIM, COORDINATES, MAX_DISTANCE, W_DEADHEAD, W_UNUSED_PENALTY, 
                     W_REST_REWARD, W_UNAVAILABILITY, W_DEMAND_PENALTY, W_CHAIN, W_FINAL)
 
-class BusSchedulingEnv:
+class BusSchedulingEnv: 
     """
     Bus Scheduling Environment with time dynamics and chaining bonus.
     - Generates a timetable from bus lines.
