@@ -31,6 +31,16 @@ data/*
 # Re-ignore everything inside figures except .gitkeep so plots aren't tracked
 data/figures/*
 !data/figures/.gitkeep
+#! Allow tracking of the nine key performance figures
+!data/figures/1_learning_curves_ci.png
+!data/figures/2_final_performance.png
+!data/figures/3_sample_efficiency.png
+!data/figures/4_convergence_speed.png
+!data/figures/5_convergence_consistency.png
+!data/figures/6_training_stability.png
+!data/figures/7_robustness_analysis.png
+!data/figures/8_statistical_significance.png
+!data/figures/9_training_time.png
 data/*.pth
 data/*.txt
 data/*.json
