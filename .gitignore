@@ -25,10 +25,12 @@ share/python-wheels/
 MANIFEST
 
 # Training outputs and data folder contents
-# Ignore everything in data/ except figures/
+# Ignore everything in data/ except we keep an empty figures/ dir via .gitkeep
 data/*
 !data/figures/
-!data/figures/*.png
+# Re-ignore everything inside figures except .gitkeep so plots aren't tracked
+data/figures/*
+!data/figures/.gitkeep
 data/*.pth
 data/*.txt
 data/*.json
