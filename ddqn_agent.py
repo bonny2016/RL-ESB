@@ -6,19 +6,77 @@ import random
 from collections import deque
 
 class DQNetwork(nn.Module):
+    """
+    Deep Q-Network (DQN) for the DDQN agent.
+
+    This class defines a simple fully-connected neural network
+    that takes a state as input and outputs Q-values for each action.
+
+    Attributes:
+        fc1 (nn.Linear): The first fully-connected layer.
+        fc2 (nn.Linear): The second fully-connected layer.
+        fc3 (nn.Linear): The output layer.
+    """
     def __init__(self, state_dim, action_dim):
+        """
+        Initializes the DQNetwork.
+
+        Args:
+            state_dim (int): The dimension of the state space.
+            action_dim (int): The dimension of the action space.
+        """
         super(DQNetwork, self).__init__()
         self.fc1 = nn.Linear(state_dim, 256)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, action_dim)
         
     def forward(self, x):
+        """
+        Performs the forward pass through the network.
+
+        Args:
+            x (torch.Tensor): The input state tensor.
+
+        Returns:
+            torch.Tensor: The Q-values for each action.
+        """
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         return self.fc3(x)
 
 class DDQNAgent:
+    """
+    Double Deep Q-Network (DDQN) agent.
+
+    This class implements the DDQN algorithm, which uses two separate
+    Q-networks (a Q-network and a target network) to stabilize learning.
+
+    Attributes:
+        state_dim (int): The dimension of the state space.
+        action_dim (int): The dimension of the action space.
+        device (torch.device): The device (CPU or CUDA) to run the agent on.
+        learning_rate (float): The learning rate for the optimizer.
+        gamma (float): The discount factor for future rewards.
+        epsilon (float): The exploration rate for the epsilon-greedy policy.
+        epsilon_min (float): The minimum value for epsilon.
+        epsilon_decay (float): The decay rate for epsilon.
+        batch_size (int): The size of the mini-batch for training.
+        memory (deque): A replay buffer to store experiences.
+        update_target_every (int): The frequency (in episodes) to update the target network.
+        q_network (DQNetwork): The main Q-network.
+        target_network (DQNetwork): The target Q-network.
+        optimizer (torch.optim.Optimizer): The optimizer for the Q-network.
+        criterion (nn.Module): The loss function.
+        training_step (int): The number of training steps performed.
+    """
     def __init__(self, state_dim, action_dim):
+        """
+        Initializes the DDQNAgent.
+
+        Args:
+            state_dim (int): The dimension of the state space.
+            action_dim (int): The dimension of the action space.
+        """
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -45,9 +103,29 @@ class DDQNAgent:
         self.training_step = 0
     
     def remember(self, state, action, reward, next_state, done):
+        """
+        Stores an experience in the replay buffer.
+
+        Args:
+            state (np.ndarray): The current state.
+            action (int): The action taken.
+            reward (float): The reward received.
+            next_state (np.ndarray): The next state.
+            done (bool): Whether the episode has finished.
+        """
         self.memory.append((state, action, reward, next_state, done))
     
     def act(self, state, valid_actions):
+        """
+        Selects an action using an epsilon-greedy policy.
+
+        Args:
+            state (np.ndarray): The current state.
+            valid_actions (list): A list of valid actions.
+
+        Returns:
+            int: The selected action.
+        """
         if random.random() < self.epsilon:
             return random.choice(valid_actions)
         
@@ -63,6 +141,12 @@ class DDQNAgent:
         return torch.argmax(q_values).item()
     
     def train(self):
+        """
+        Trains the Q-network using a mini-batch of experiences from the replay buffer.
+
+        Returns:
+            float: The loss value.
+        """
         if len(self.memory) < self.batch_size:
             return
         
@@ -106,9 +190,18 @@ class DDQNAgent:
         return loss.item()
     
     def update_target_network(self):
+        """
+        Updates the target network with the weights of the Q-network.
+        """
         self.target_network.load_state_dict(self.q_network.state_dict())
     
     def save(self, path):
+        """
+        Saves the model and optimizer state dictionaries.
+
+        Args:
+            path (str): The path to save the model to.
+        """
         torch.save({
             'q_network_state_dict': self.q_network.state_dict(),
             'target_network_state_dict': self.target_network.state_dict(),
@@ -117,6 +210,12 @@ class DDQNAgent:
         }, path)
     
     def load(self, path):
+        """
+        Loads the model and optimizer state dictionaries.
+
+        Args:
+            path (str): The path to load the model from.
+        """
         checkpoint = torch.load(path)
         self.q_network.load_state_dict(checkpoint['q_network_state_dict'])
         self.target_network.load_state_dict(checkpoint['target_network_state_dict'])

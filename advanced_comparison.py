@@ -16,11 +16,20 @@ plt.style.use('seaborn-v0_8')
 print("Phase 2 Advanced Comparison Framework - Starting...")
 
 class AdvancedMetrics:
-    """Advanced metrics for RL algorithm comparison"""
+    """A collection of advanced metrics for evaluating RL algorithms."""
     
     @staticmethod
     def compute_learning_curve_auc(rewards, max_episodes):
-        """Compute normalized area under learning curve"""
+        """
+        Computes the normalized Area Under the Learning Curve (AUC).
+
+        Args:
+            rewards (list): A list of reward values.
+            max_episodes (int): The maximum number of episodes.
+
+        Returns:
+            float: The normalized AUC value.
+        """
         if not rewards:
             return 0
         episodes = np.linspace(10, max_episodes, len(rewards))
@@ -28,7 +37,16 @@ class AdvancedMetrics:
     
     @staticmethod
     def steps_to_threshold(rewards, threshold_pct=0.9):
-        """Episodes needed to reach threshold performance"""
+        """
+        Calculates the number of episodes needed to reach a performance threshold.
+
+        Args:
+            rewards (list): A list of reward values.
+            threshold_pct (float, optional): The performance threshold percentage. Defaults to 0.9.
+
+        Returns:
+            int: The number of episodes to reach the threshold.
+        """
         if not rewards:
             return float('inf')
         target = np.max(rewards) * threshold_pct
@@ -37,7 +55,16 @@ class AdvancedMetrics:
     
     @staticmethod
     def compute_return_variance(rewards, window_size=50):
-        """Moving window variance of returns"""
+        """
+        Computes the moving window variance of returns.
+
+        Args:
+            rewards (list): A list of reward values.
+            window_size (int, optional): The size of the moving window. Defaults to 50.
+
+        Returns:
+            float: The mean variance of the returns.
+        """
         if len(rewards) < window_size:
             return np.var(rewards)
         variances = []
@@ -48,14 +75,31 @@ class AdvancedMetrics:
     
     @staticmethod
     def compute_final_stability(rewards, final_episodes=100):
-        """Variance in final episodes"""
+        """
+        Computes the variance in the final episodes of training.
+
+        Args:
+            rewards (list): A list of reward values.
+            final_episodes (int, optional): The number of final episodes to consider. Defaults to 100.
+
+        Returns:
+            float: The variance of the rewards in the final episodes.
+        """
         if len(rewards) < final_episodes:
             return np.var(rewards)
         return np.var(rewards[-final_episodes:])
     
     @staticmethod
     def compute_regret(rewards):
-        """Cumulative regret vs best seen performance"""
+        """
+        Computes the cumulative regret against the best seen performance.
+
+        Args:
+            rewards (list): A list of reward values.
+
+        Returns:
+            float: The average regret.
+        """
         if not rewards:
             return 0
         best_return = np.max(rewards)
@@ -64,7 +108,15 @@ class AdvancedMetrics:
     
     @staticmethod
     def compute_policy_entropy(log_probs_history):
-        """Compute policy entropy over time (for policy-based methods)"""
+        """
+        Computes the policy entropy over time for policy-based methods.
+
+        Args:
+            log_probs_history (list): A list of log probabilities.
+
+        Returns:
+            list: A list of entropy values.
+        """
         if not log_probs_history:
             return []
         entropies = []
@@ -77,14 +129,32 @@ class AdvancedMetrics:
     
     @staticmethod
     def compute_q_calibration_error(q_values, actual_returns):
-        """Compute Q-value calibration error (for value-based methods)"""
+        """
+        Computes the Q-value calibration error for value-based methods.
+
+        Args:
+            q_values (list): A list of Q-values.
+            actual_returns (list): A list of actual returns.
+
+        Returns:
+            float: The mean absolute error between Q-values and actual returns.
+        """
         if len(q_values) != len(actual_returns):
             return float('inf')
         return np.mean(np.abs(np.array(q_values) - np.array(actual_returns)))
     
     @staticmethod
     def compute_convergence_consistency(rewards, window_size=100):
-        """Measure how consistent the final convergence is"""
+        """
+        Measures how consistent the final convergence is.
+
+        Args:
+            rewards (list): A list of reward values.
+            window_size (int, optional): The size of the window to consider for convergence. Defaults to 100.
+
+        Returns:
+            float: The coefficient of variation of the final window.
+        """
         if len(rewards) < window_size:
             return np.std(rewards)
         final_window = rewards[-window_size:]
@@ -92,7 +162,16 @@ class AdvancedMetrics:
     
     @staticmethod
     def compute_robustness_score(baseline_rewards, noisy_rewards):
-        """Compute robustness to noise/perturbations"""
+        """
+        Computes the robustness to noise or perturbations.
+
+        Args:
+            baseline_rewards (list): A list of baseline reward values.
+            noisy_rewards (list): A list of noisy reward values.
+
+        Returns:
+            float: The robustness score.
+        """
         if not baseline_rewards or not noisy_rewards:
             return 0
         baseline_mean = np.mean(baseline_rewards[-100:])  # Final performance
@@ -100,7 +179,15 @@ class AdvancedMetrics:
         return (noisy_mean / baseline_mean) if baseline_mean > 0 else 0
 
 def extract_rewards_from_terminal(filename):
-    """Extract rewards from terminal output saved in a file"""
+    """
+    Extracts rewards from terminal output saved in a file.
+
+    Args:
+        filename (str): The name of the file to extract rewards from.
+
+    Returns:
+        list: A list of reward values.
+    """
     rewards = []
     pattern = r"Episode \d+/\d+, Average Reward: ([-\d.]+)"
     
@@ -116,7 +203,15 @@ def extract_rewards_from_terminal(filename):
     return rewards
 
 def extract_bus_usage(filename):
-    """Extract average bus usage from results file"""
+    """
+    Extracts the average bus usage from a results file.
+
+    Args:
+        filename (str): The name of the results file.
+
+    Returns:
+        float: The average number of buses used.
+    """
     try:
         with open(filename, 'r') as f:
             content = f.read()
@@ -130,7 +225,16 @@ def extract_bus_usage(filename):
     return None
 
 def extract_multiple_seeds_data(algorithm_name, num_seeds=5):
-    """Extract data from multiple training runs (seeds)"""
+    """
+    Extracts data from multiple training runs (seeds).
+
+    Args:
+        algorithm_name (str): The name of the algorithm.
+        num_seeds (int, optional): The number of seeds. Defaults to 5.
+
+    Returns:
+        list: A list of reward lists, one for each seed.
+    """
     seeds_data = []
     for seed in range(num_seeds):
         seed_file = f'data/{algorithm_name.lower()}_training_seed_{seed}.txt'
@@ -149,7 +253,15 @@ def extract_multiple_seeds_data(algorithm_name, num_seeds=5):
     return seeds_data
 
 def extract_training_time(filename):
-    """Extract training time from log file"""
+    """
+    Extracts the training time from a log file.
+
+    Args:
+        filename (str): The name of the log file.
+
+    Returns:
+        float: The training time in seconds.
+    """
     try:
         with open(filename, 'r') as f:
             content = f.read()
@@ -166,7 +278,16 @@ def extract_training_time(filename):
         return None
 
 def simulate_noisy_environment(base_rewards, noise_level=0.1):
-    """Simulate performance under noisy conditions"""
+    """
+    Simulates performance under noisy conditions.
+
+    Args:
+        base_rewards (list): The baseline reward values.
+        noise_level (float, optional): The level of noise to add. Defaults to 0.1.
+
+    Returns:
+        list: A list of noisy reward values.
+    """
     if not base_rewards:
         return []
     
@@ -176,7 +297,16 @@ def simulate_noisy_environment(base_rewards, noise_level=0.1):
     return noisy_rewards
 
 def compute_statistical_significance(data1, data2):
-    """Compute statistical significance between two datasets"""
+    """
+    Computes the statistical significance between two datasets.
+
+    Args:
+        data1 (list): The first dataset.
+        data2 (list): The second dataset.
+
+    Returns:
+        tuple: A tuple containing the statistic and p-value.
+    """
     if len(data1) < 3 or len(data2) < 3:
         return None, None
     
@@ -188,7 +318,12 @@ def compute_statistical_significance(data1, data2):
         return None, None
 
 def create_comprehensive_comparison():
-    """Create comprehensive algorithm comparison with Phase 2 enhancements"""
+    """
+    Creates a comprehensive comparison of the RL algorithms.
+
+    Returns:
+        dict: A dictionary containing the metrics for each algorithm.
+    """
     
     # Algorithm data
     algorithms = {
@@ -274,7 +409,12 @@ def create_comprehensive_comparison():
     return metrics_results
 
 def plot_individual_analyses(metrics_results):
-    """Create separate plots for each analysis with detailed explanations"""
+    """
+    Creates separate plots for each analysis with detailed explanations.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     
     print("Generating individual analysis plots...")
     
@@ -309,7 +449,12 @@ def plot_individual_analyses(metrics_results):
     plot_statistical_significance(metrics_results)
 
 def plot_learning_curves_with_ci(metrics_results):
-    """Learning Curves with 95% Confidence Intervals"""
+    """
+    Plots the learning curves with 95% confidence intervals.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(12, 8))
     
     colors = {'PPO': 'red', 'DDQN': 'blue', 'REINFORCE': 'green', 'A2C': 'orange'}
@@ -346,7 +491,12 @@ def plot_learning_curves_with_ci(metrics_results):
     plt.close()
 
 def plot_final_performance(metrics_results):
-    """Final Performance Distribution"""
+    """
+    Plots the final performance distribution.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(10, 8))
     
     final_performances = []
@@ -379,7 +529,12 @@ def plot_final_performance(metrics_results):
     plt.close()
 
 def plot_sample_efficiency(metrics_results):
-    """Sample Efficiency (Area Under Curve)"""
+    """
+    Plots the sample efficiency (Area Under Curve).
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(10, 6))
     
     algorithms = []
@@ -413,7 +568,12 @@ def plot_sample_efficiency(metrics_results):
     plt.close()
 
 def plot_convergence_speed(metrics_results):
-    """Convergence Speed"""
+    """
+    Plots the convergence speed.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(10, 6))
     
     algorithms = []
@@ -446,7 +606,12 @@ def plot_convergence_speed(metrics_results):
     plt.close()
 
 def plot_convergence_consistency(metrics_results):
-    """Convergence Consistency"""
+    """
+    Plots the convergence consistency.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(10, 6))
     
     algorithms = []
@@ -478,7 +643,12 @@ def plot_convergence_consistency(metrics_results):
     plt.close()
 
 def plot_training_stability(metrics_results):
-    """Training Stability"""
+    """
+    Plots the training stability.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(10, 6))
     
     algorithms = []
@@ -510,7 +680,12 @@ def plot_training_stability(metrics_results):
     plt.close()
 
 def plot_robustness_analysis(metrics_results):
-    """Clean vs Noisy Environment"""
+    """
+    Plots the clean vs. noisy environment performance.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(12, 6))
     
     algorithms = []
@@ -564,7 +739,12 @@ def plot_robustness_analysis(metrics_results):
     plt.close()
 
 def plot_statistical_significance(metrics_results):
-    """Statistical Significance Heatmap"""
+    """
+    Plots the statistical significance heatmap.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     algorithms = list(metrics_results.keys())
     n_algos = len(algorithms)
     
@@ -606,7 +786,12 @@ def plot_statistical_significance(metrics_results):
     plt.close()
 
 def plot_training_time_comparison(metrics_results):
-    """Training Time Comparison"""
+    """
+    Plots the training time comparison.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     plt.figure(figsize=(10, 6))
     
     algorithms = []
@@ -638,7 +823,12 @@ def plot_training_time_comparison(metrics_results):
     plt.close()
 
 def print_detailed_metrics(metrics_results):
-    """Print comprehensive metrics table with Phase 2 enhancements"""
+    """
+    Prints a comprehensive metrics table with Phase 2 enhancements.
+
+    Args:
+        metrics_results (dict): A dictionary of metrics for each algorithm.
+    """
     print("\\n" + "="*120)
     print("COMPREHENSIVE ALGORITHM COMPARISON REPORT - PHASE 2")
     print("="*120)
@@ -701,7 +891,7 @@ def print_detailed_metrics(metrics_results):
     print("\\n" + "="*120)
 
 def main():
-    """Main execution"""
+    """Main execution function."""
     print("Generating comprehensive algorithm comparison...")
     
     # Ensure directories exist

@@ -1,35 +1,22 @@
+"""
+Main script for training and evaluating the A2C agent.
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
-import os
 import time
 from environment import BusSchedulingEnv
 from a2c_agent import A2CAgent
+from utils import create_results_directory, plot_rewards, write_results
 
 # Hyperparameters
 NUM_EPISODES = 6000
 MAX_STEPS = 500
 EVAL_EPISODES = 10
 
-def create_results_directory():
-    if not os.path.exists('data'):
-        os.makedirs('data')
-    if not os.path.exists('data/figures'):
-        os.makedirs('data/figures')
-
-def plot_rewards(rewards, filename):
-    plt.figure(figsize=(10, 6))
-    plt.plot(rewards)
-    plt.title('Training Rewards over Episodes (A2C)')
-    plt.xlabel('Episode')
-    plt.ylabel('Total Reward')
-    plt.savefig(f'data/figures/{filename}')
-    plt.close()
-
-def write_results(results, filename):
-    with open(f'data/{filename}', 'w') as f:
-        f.write(results)
-
 def main():
+    """
+    Main function for training and evaluating the A2C agent.
+    """
     create_results_directory()
     
     # Start timing
@@ -109,7 +96,7 @@ def main():
                 f.write(progress)
     
     # Plot training rewards
-    plot_rewards(episode_rewards, 'a2c_training_rewards.png')
+    plot_rewards(episode_rewards, 'a2c_training_rewards.png', 'Training Rewards over Episodes (A2C)')
     
     # Evaluate best model
     agent.load('data/a2c_best_model.pth')

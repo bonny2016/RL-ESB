@@ -1,37 +1,32 @@
+"""
+Main script for training and evaluating the REINFORCE agent.
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt
-import os
 import time
 from environment import BusSchedulingEnv
 from reinforce_agent import REINFORCEAgent
+from utils import create_results_directory, plot_rewards, write_results
 
 # Hyperparameters
 NUM_EPISODES = 6000
 MAX_STEPS = 500
 EVAL_EPISODES = 10
 
-# Ensure directories exist
-os.makedirs('data', exist_ok=True)
-os.makedirs('data/figures', exist_ok=True)
-
-# Clear previous training log
-with open('data/reinforce_training.txt', 'w') as f:
-    f.write('')
-
-def plot_rewards(rewards, filename):
-    plt.figure(figsize=(10, 6))
-    plt.plot(rewards)
-    plt.title('Training Rewards over Episodes (REINFORCE)')
-    plt.xlabel('Episode')
-    plt.ylabel('Total Reward')
-    plt.savefig(f'data/figures/{filename}')
-    plt.close()
-
 def main():
+    """
+    Main function for training and evaluating the REINFORCE agent.
+    """
+    create_results_directory()
+
     # Start timing
     start_time = time.time()
     print(f"Starting REINFORCE training at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
     
+    # Clear previous training log
+    with open('data/reinforce_training.txt', 'w') as f:
+        f.write('')
+
     env = BusSchedulingEnv()
     state_dim = env.observation_space_dim
     action_dim = env.action_space_dim
@@ -66,7 +61,7 @@ def main():
             print(progress, end='')
             with open('data/reinforce_training.txt', 'a') as f:
                 f.write(progress)
-    plot_rewards(episode_rewards, 'reinforce_training_rewards.png')
+    plot_rewards(episode_rewards, 'reinforce_training_rewards.png', 'Training Rewards over Episodes (REINFORCE)')
 
     # Evaluation
     agent.load('data/reinforce_best_model.pth')
@@ -87,8 +82,7 @@ def main():
                 total_buses_used.append(env.get_total_buses_used())
                 break
     results = f"""REINFORCE Evaluation Results:\nAverage Reward: {np.mean(eval_rewards):.2f} ± {np.std(eval_rewards):.2f}\nAverage Buses Used: {np.mean(total_buses_used):.2f} ± {np.std(total_buses_used):.2f}\nBest Episode Reward: {max(eval_rewards):.2f}\nMinimum Buses Used: {min(total_buses_used)}\n"""
-    with open('data/reinforce_results.txt', 'w') as f:
-        f.write(results)
+    write_results(results, 'reinforce_results.txt')
     
     # End timing
     end_time = time.time()
