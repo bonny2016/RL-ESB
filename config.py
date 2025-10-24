@@ -1,4 +1,10 @@
 # config.py
+"""
+Configuration file for the Electric Bus Scheduling Problem.
+
+This file contains all the parameters and settings for the simulation
+environment and the reinforcement learning agents.
+"""
 
 import math 
 
@@ -50,6 +56,15 @@ COORDINATES = {
 
 # Dynamically calculate the maximum distance between any two points
 def calculate_max_distance(coords):
+    """
+    Calculates the maximum distance between any two points in a dictionary of coordinates.
+
+    Args:
+        coords (dict): A dictionary where keys are location names and values are (x, y) coordinates.
+
+    Returns:
+        float: The maximum distance between any two points.
+    """
     max_dist = 0
     for loc1, coord1 in coords.items():
         for loc2, coord2 in coords.items():

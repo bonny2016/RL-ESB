@@ -1,20 +1,32 @@
 # run.py
+"""
+Main script for training and evaluating the PPO agent.
+"""
+
 import numpy as np
-import matplotlib.pyplot as plt 
-import os
 import time
 from environment import BusSchedulingEnv
 from ppo_agent import PPOAgent
 from config import STATE_DIM, ACTION_DIM, NUM_EPISODES
+from utils import create_results_directory, plot_rewards, write_results
 
 def train():
+    """
+    Trains the PPO agent.
+
+    Returns:
+        tuple: A tuple containing:
+            - list: A list of rewards for each episode.
+            - list: A list of average rewards for each block of episodes.
+            - PPOAgent: The trained PPO agent.
+            - BusSchedulingEnv: The environment.
+    """
+    create_results_directory()
     # Start timing
     start_time = time.time()
     print(f"Starting PPO training at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}")
     
     # Clear previous training log
-    if not os.path.exists('data'):
-        os.makedirs('data')
     with open('data/ppo_training.txt', 'w') as f:
         f.write('')  # Clear the file
         
@@ -63,6 +75,14 @@ def train():
     return episode_rewards, avg_rewards, agent, env
 
 def evaluate(agent, env, num_episodes=10):
+    """
+    Evaluates the trained PPO agent.
+
+    Args:
+        agent (PPOAgent): The trained PPO agent.
+        env (BusSchedulingEnv): The environment.
+        num_episodes (int, optional): The number of episodes to evaluate. Defaults to 10.
+    """
     eval_rewards = []
     total_buses_used = []
     
@@ -87,8 +107,7 @@ Average Buses Used: {np.mean(total_buses_used):.2f} ± {np.std(total_buses_used)
 Best Episode Reward: {max(eval_rewards):.2f}
 Minimum Buses Used: {min(total_buses_used)}
 """
-    with open('data/results.txt', 'w') as f:
-        f.write(results)
+    write_results(results, 'results.txt')
     
     # Print final schedule for best episode
     env.print_solution('data/results.txt')
@@ -96,21 +115,6 @@ Minimum Buses Used: {min(total_buses_used)}
 if __name__ == '__main__':
     rewards, avg_rewards, agent, env = train()
     
-    episodes = np.arange(1, NUM_EPISODES+1)
-    
-    # Plot the reward for each episode
-    plt.plot(episodes, rewards, label="Episode Reward", alpha=0.5)
-    
-    # Compute x-values for average rewards: these occur every 10 episodes.
-    avg_episode_nums = np.arange(10, NUM_EPISODES+1, 10)  # Changed from 50 to 10
-    plt.plot(avg_episode_nums, avg_rewards, label="Average Reward (per 10 eps)", color="red", linewidth=2)
-    
-    plt.xlabel("Episode")
-    plt.ylabel("Total Reward")
-    plt.title("PPO Training Progress")  # Updated title
-    plt.legend()
-    plt.grid(True)
-    # plt.show()
-    plt.savefig("data/figures/ppo_training_rewards.png")  # Updated filename
+    plot_rewards(rewards, 'ppo_training_rewards.png', 'PPO Training Progress')
     
     evaluate(agent, env)

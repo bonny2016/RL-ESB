@@ -10,7 +10,26 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 class ActorCritic(nn.Module):
+    """
+    Actor-Critic network for PPO.
+
+    This class defines a neural network with a shared body and two heads:
+    one for the actor (policy) and one for the critic (value function).
+
+    Attributes:
+        state_net (nn.Sequential): The shared layers of the network.
+        actor (nn.Linear): The actor-specific layer.
+        critic (nn.Linear): The critic-specific layer.
+    """
     def __init__(self, state_dim, action_dim, hidden_size):
+        """
+        Initializes the ActorCritic network.
+
+        Args:
+            state_dim (int): The dimension of the state space.
+            action_dim (int): The dimension of the action space.
+            hidden_size (int): The number of neurons in the hidden layers.
+        """
         super(ActorCritic, self).__init__()
         self.state_net = nn.Sequential(
             nn.Linear(state_dim, 128),
@@ -24,12 +43,35 @@ class ActorCritic(nn.Module):
         self.critic = nn.Linear(32, 1)
 
     def forward(self, state):
+        """
+        Performs the forward pass through the network.
+
+        Args:
+            state (torch.Tensor): The input state.
+
+        Returns:
+            tuple: A tuple containing:
+                - torch.Tensor: The action logits.
+                - torch.Tensor: The state value.
+        """
         x = self.state_net(state)
         logits = self.actor(x)
         value = self.critic(x)
         return logits, value
 
     def act(self, state):
+        """
+        Selects an action based on the current policy.
+
+        Args:
+            state (np.ndarray): The current state.
+
+        Returns:
+            tuple: A tuple containing:
+                - int: The selected action.
+                - torch.Tensor: The log probability of the selected action.
+                - torch.Tensor: The estimated state value.
+        """
         state_tensor = torch.FloatTensor(state).to(device)
         logits, value = self.forward(state_tensor)
         # Action masking: use the continuous availability features from state[2:]
@@ -44,11 +86,41 @@ class ActorCritic(nn.Module):
         return action.item(), log_prob, value
 
 class PPOAgent:
+    """
+    Proximal Policy Optimization (PPO) agent.
+
+    This class implements the PPO algorithm, which is an on-policy
+    actor-critic method that uses a clipped surrogate objective function
+    to improve training stability.
+
+    Attributes:
+        policy (ActorCritic): The actor-critic network.
+        optimizer (torch.optim.Optimizer): The optimizer for the network.
+    """
     def __init__(self, state_dim, action_dim, hidden_size):
+        """
+        Initializes the PPOAgent.
+
+        Args:
+            state_dim (int): The dimension of the state space.
+            action_dim (int): The dimension of the action space.
+            hidden_size (int): The number of neurons in the hidden layers.
+        """
         self.policy = ActorCritic(state_dim, action_dim, hidden_size).to(device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=LEARNING_RATE)
 
     def compute_advantages(self, rewards, values, dones):
+        """
+        Computes the advantages using Generalized Advantage Estimation (GAE).
+
+        Args:
+            rewards (list): A list of rewards.
+            values (list): A list of state values.
+            dones (list): A list of done flags.
+
+        Returns:
+            list: A list of advantages.
+        """
         advantages = []
         gae = 0
         values = values + [0]
@@ -59,6 +131,13 @@ class PPOAgent:
         return advantages
 
     def update(self, trajectories):
+        """
+        Updates the actor-critic network using the PPO algorithm.
+
+        Args:
+            trajectories (list): A list of trajectories, where each trajectory is a
+                tuple of (state, action, log_prob, reward, done).
+        """
         states = torch.FloatTensor(np.array([t[0] for t in trajectories])).to(device)
         actions = torch.LongTensor(np.array([t[1] for t in trajectories])).unsqueeze(1).to(device)
         old_log_probs = torch.stack([t[2] for t in trajectories]).detach().to(device)

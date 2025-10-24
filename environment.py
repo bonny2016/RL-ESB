@@ -9,18 +9,24 @@ from config import (OPERATION_START_MIN, OPERATION_END_MIN, T_RANGE, BUS_LINES, 
 class BusSchedulingEnv: 
     """
     Bus Scheduling Environment with time dynamics and chaining bonus.
-    - Generates a timetable from bus lines.
-    - All buses start at the depot; each bus has a next_available_time.
-    - The state vector includes: normalized current event time, normalized bus line,
-      and for each bus a continuous value = (current event time - next_available_time) / T_RANGE.
-    - The reward function includes:
-         • Deadhead cost if bus is not at required terminal,
-         • Penalty for using an unused bus when a used bus is available,
-         • Penalty if a bus is not available (negative availability),
-         • Bonus for reusing a bus on the same bus line consecutively.
-    - At the end, a final penalty proportional to the number of buses used is applied.
+
+    This class defines the environment for the bus scheduling problem. It handles
+    the simulation of the bus network, including the timetable, bus status,
+    state representation, and reward calculation.
+
+    Attributes:
+        timetable (list): A list of all the bus trips (events) to be scheduled.
+        num_events (int): The total number of events in the timetable.
+        current_index (int): The index of the current event in the timetable.
+        bus_status (dict): A dictionary tracking the status of each bus (location, availability, etc.).
+        schedule (dict): A dictionary to store the schedule for each bus.
+        observation_space_dim (int): The dimension of the observation space.
+        action_space_dim (int): The dimension of the action space.
     """
     def __init__(self):
+        """
+        Initializes the BusSchedulingEnv.
+        """
         self.timetable = self.generate_timetable()
         self.num_events = len(self.timetable)
         global MAX_EPISODE_STEPS
@@ -39,6 +45,12 @@ class BusSchedulingEnv:
         self.action_space_dim = INITIAL_NUM_BUSES
 
     def generate_timetable(self):
+        """
+        Generates a timetable of bus trips based on the bus line definitions in the config file.
+
+        Returns:
+            list: A sorted list of events (bus trips).
+        """
         events = []
         for line_id, info in BUS_LINES.items():
             interval = info["interval"]
@@ -60,6 +72,9 @@ class BusSchedulingEnv:
         """
         Returns a list of valid bus IDs that can be assigned to the current event.
         A bus is valid if it will be available by the time of the current event.
+
+        Returns:
+            list: A list of valid bus IDs.
         """
         if self.current_index >= self.num_events:
             return []
@@ -75,6 +90,12 @@ class BusSchedulingEnv:
         return valid_actions
 
     def reset(self):
+        """
+        Resets the environment to its initial state.
+
+        Returns:
+            np.ndarray: The initial state of the environment.
+        """
         self.current_index = 0
         self.bus_status = {bus_id: {"location": DEPOT, "next_available_time": OPERATION_START_MIN, "used": False} 
                            for bus_id in range(INITIAL_NUM_BUSES)}
@@ -83,11 +104,15 @@ class BusSchedulingEnv:
 
     def get_state(self):
         """
-        Build state vector:
-         - position 0: normalized current event time (current event time / OPERATION_END_MIN)
-         - position 1: normalized bus line id (line_id / number of bus lines)
-         - positions 2 to 2+INITIAL_NUM_BUSES-1: for each bus, a continuous availability value:
-           (current event time - next_available_time) / T_RANGE.
+        Builds the state vector for the current event.
+
+        The state vector consists of:
+        - Normalized current event time.
+        - Normalized bus line ID.
+        - Continuous availability value for each bus.
+
+        Returns:
+            np.ndarray: The state vector.
         """
         if self.current_index >= self.num_events:
             return np.zeros(STATE_DIM, dtype=np.float32)
@@ -104,6 +129,16 @@ class BusSchedulingEnv:
         return state
 
     def compute_deadhead_cost(self, current_location, required_location):
+        """
+        Computes the deadhead cost for moving a bus between two locations.
+
+        Args:
+            current_location (str): The current location of the bus.
+            required_location (str): The required location of the bus.
+
+        Returns:
+            float: The normalized deadhead cost.
+        """
         x1, y1 = COORDINATES[current_location]
         x2, y2 = COORDINATES[required_location]
         distance = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
@@ -111,6 +146,19 @@ class BusSchedulingEnv:
         return normalized_cost
 
     def step(self, action):
+        """
+        Executes a single step in the environment.
+
+        Args:
+            action (int): The action to take (i.e., the bus to assign).
+
+        Returns:
+            tuple: A tuple containing:
+                - np.ndarray: The next state.
+                - float: The reward for the current step.
+                - bool: Whether the episode has finished.
+                - dict: A dictionary containing additional information.
+        """
         if self.current_index >= self.num_events:
             return self.get_state(), 0, True, {}
 
@@ -175,17 +223,32 @@ class BusSchedulingEnv:
         return next_state, step_reward, done, info
 
     def get_total_buses_used(self):
-        """Returns the total number of buses that were used in the schedule."""
+        """
+        Returns the total number of buses that were used in the schedule.
+
+        Returns:
+            int: The total number of buses used.
+        """
         return sum(1 for bus_id in self.bus_status if self.bus_status[bus_id]["used"])
 
     def print_and_save(self, text, file):
         """
         Helper function to print text to the console and write it to a file.
+
+        Args:
+            text (str): The text to print and save.
+            file (file object): The file to write to.
         """
         print(text, end="")  # Print to console
         file.write(text)     # Write to file
 
     def print_problem(self, file_path="data/results.txt"):
+        """
+        Prints the problem definition to the console and a file.
+
+        Args:
+            file_path (str, optional): The path to the file to save the problem definition to. Defaults to "data/results.txt".
+        """
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "w") as f:
             self.print_and_save("=== Problem Definition ===\n", f)
@@ -203,6 +266,12 @@ class BusSchedulingEnv:
             self.print_and_save("==========================\n\n", f)
 
     def print_solution(self, file_path="data/results.txt"):
+        """
+        Prints the final bus schedules to the console and a file.
+
+        Args:
+            file_path (str, optional): The path to the file to save the solution to. Defaults to "data/results.txt".
+        """
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "a") as f:  # Append to the same file
             self.print_and_save("=== Final Bus Schedules (Solution) ===\n", f)
