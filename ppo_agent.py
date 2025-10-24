@@ -11,7 +11,7 @@ print(f"Using device: {device}")
 
 class ActorCritic(nn.Module):
     """
-    Actor-Critic network for PPO.
+    Actor-Critic neural network for PPO.
 
     This class defines a neural network with a shared body and two heads:
     one for the actor (policy) and one for the critic (value function).

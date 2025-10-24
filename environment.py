@@ -18,7 +18,7 @@ class BusSchedulingEnv:
         timetable (list): A list of all the bus trips (events) to be scheduled.
         num_events (int): The total number of events in the timetable.
         current_index (int): The index of the current event in the timetable.
-        bus_status (dict): A dictionary tracking the status of each bus (location, availability, etc.).
+        bus_status (dict): A dictionary tracking the status of each bus (location, availability, SoC etc.).
         schedule (dict): A dictionary to store the schedule for each bus.
         observation_space_dim (int): The dimension of the observation space.
         action_space_dim (int): The dimension of the action space.

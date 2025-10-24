@@ -102,11 +102,11 @@ def evaluate(agent, env, num_episodes=10):
     
     # Save evaluation results
     results = f"""PPO Evaluation Results:
-Average Reward: {np.mean(eval_rewards):.2f} ± {np.std(eval_rewards):.2f}
-Average Buses Used: {np.mean(total_buses_used):.2f} ± {np.std(total_buses_used):.2f}
-Best Episode Reward: {max(eval_rewards):.2f}
-Minimum Buses Used: {min(total_buses_used)}
-"""
+    Average Reward: {np.mean(eval_rewards):.2f} ± {np.std(eval_rewards):.2f}
+    Average Buses Used: {np.mean(total_buses_used):.2f} ± {np.std(total_buses_used):.2f}
+    Best Episode Reward: {max(eval_rewards):.2f}
+    Minimum Buses Used: {min(total_buses_used)}
+    """
     write_results(results, 'results.txt')
     
     # Print final schedule for best episode

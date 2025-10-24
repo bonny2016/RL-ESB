@@ -1,6 +1,6 @@
 # config.py
 """
-Configuration file for the Electric Bus Scheduling Problem.
+Configuration file for the Electric Bus Scheduling and charging Problem.
 
 This file contains all the parameters and settings for the simulation
 environment and the reinforcement learning agents.
@@ -18,7 +18,8 @@ T_RANGE = OPERATION_END_MIN - OPERATION_START_MIN  # total operating period
 # Bus line definitions:
 # Two bus lines with loop service:
 # Bus Line 1: Terminal1 (trip: 25 min + rest: 5 min; interval = 30 minutes)
-# Bus Line 2: Terminal3 (trip: 40 min + rest: 5 min; interval = 45 minutes)
+# Bus Line 2: Terminal2 (trip: 40 min + rest: 5 min; interval = 45 minutes)
+# Bus Line 3: Terminal3 (trip: 35 min + rest: 10 min; interval = 50 minutes)
 BUS_LINES = {
     1: {
         "name": "Bus Line 1",
