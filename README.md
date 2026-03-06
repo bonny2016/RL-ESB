@@ -27,6 +27,8 @@ This fork extends the original project with dataset-driven scheduling support an
 - Updated PPO flow (`run.py`, `ppo_agent.py`) to use environment-provided valid actions and dynamic state/action dimensions.
 - Updated setup notes so only core PyTorch is required by default (no mandatory `torchvision`/`torchaudio`).
 
+Added dataset CLI support so PPO can run on a specific Juliette instance (e.g., python run.py --data-source juliette --dataset-root dataArticleJuliette --dataset-subset A --dataset-split Training --dataset-instance Network9a_22_0).
+
 ## Features
 
 - **Multi-Algorithm Implementation**: Compare 4 different RL approaches
