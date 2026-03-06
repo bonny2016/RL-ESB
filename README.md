@@ -1,4 +1,4 @@
-﻿# Electric Bus Scheduling Optimization with Deep Reinforcement Learning
+# Electric Bus Scheduling Optimization with Deep Reinforcement Learning
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.9+-red.svg)](https://pytorch.org/)
@@ -27,7 +27,7 @@ This fork extends the original project with dataset-driven scheduling support an
 - Updated PPO flow (`run.py`, `ppo_agent.py`) to use environment-provided valid actions and dynamic state/action dimensions.
 - Updated setup notes so only core PyTorch is required by default (no mandatory `torchvision`/`torchaudio`).
 
-## ðŸŽ¯ Features
+## Features
 
 - **Multi-Algorithm Implementation**: Compare 4 different RL approaches
   - **PPO (Proximal Policy Optimization)**: Stable policy gradient method
@@ -40,7 +40,7 @@ This fork extends the original project with dataset-driven scheduling support an
 - **Action Masking**: Intelligent constraint handling for valid bus assignments
 - **Reward Engineering**: Multi-objective optimization (fleet size, deadhead costs, chain bonuses)
 
-## ðŸš€ Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -99,39 +99,39 @@ python run_reinforce.py
 python run_a2c.py
 ```
 
-## ðŸ“Š Project Structure
+## Project Structure
 
 ```
 RL-ESB/
-â”œâ”€â”€ config.py                    # System configuration and hyperparameters
-â”œâ”€â”€ environment.py               # Bus scheduling environment implementation
-â”œâ”€â”€ 
-â”œâ”€â”€ # Algorithm Implementations
-â”œâ”€â”€ ppo_agent.py                 # Proximal Policy Optimization agent
-â”œâ”€â”€ ddqn_agent.py               # Double Deep Q-Network agent  
-â”œâ”€â”€ reinforce_agent.py          # REINFORCE policy gradient agent
-â”œâ”€â”€ a2c_agent.py                # Advantage Actor-Critic agent
-â”œâ”€â”€
-â”œâ”€â”€ # Training Scripts  
-â”œâ”€â”€ run.py                      # PPO training and evaluation
-â”œâ”€â”€ run_ddqn.py                 # DDQN training and evaluation
-â”œâ”€â”€ run_reinforce.py            # REINFORCE training and evaluation
-â”œâ”€â”€ run_a2c.py                  # A2C training and evaluation
-â”œâ”€â”€ compare_algorithms.py       # Multi-algorithm comparison and analysis
-â”œâ”€â”€
-â”œâ”€â”€ data/                       # Results and model storage
-â”‚   â”œâ”€â”€ *_training.txt          # Training progress logs
-â”‚   â”œâ”€â”€ *_results.txt           # Evaluation results
-â”‚   â”œâ”€â”€ *_best_model.pth        # Best trained models
-â”‚   â””â”€â”€ figures/                # Training plots and comparisons
-â”‚       â”œâ”€â”€ *_training_rewards.png
-â”‚       â””â”€â”€ algorithm_comparison.png
-â”œâ”€â”€
-â”œâ”€â”€ requirements.txt            # Python dependencies
-â””â”€â”€ README.md                   # This file
+|-- config.py                    # System configuration and hyperparameters
+|-- environment.py               # Bus scheduling environment implementation
+|
+|-- # Algorithm Implementations
+|-- ppo_agent.py                 # Proximal Policy Optimization agent
+|-- ddqn_agent.py                # Double Deep Q-Network agent
+|-- reinforce_agent.py           # REINFORCE policy gradient agent
+|-- a2c_agent.py                 # Advantage Actor-Critic agent
+|
+|-- # Training Scripts
+|-- run.py                       # PPO training and evaluation
+|-- run_ddqn.py                  # DDQN training and evaluation
+|-- run_reinforce.py             # REINFORCE training and evaluation
+|-- run_a2c.py                   # A2C training and evaluation
+|-- advanced_comparison.py       # Multi-algorithm comparison and analysis
+|
+|-- data/                        # Results and model storage
+|   |-- *_training.txt           # Training progress logs
+|   |-- *_results.txt            # Evaluation results
+|   |-- *_best_model.pth         # Best trained models
+|   `-- figures/                 # Training plots and comparisons
+|       |-- *_training_rewards.png
+|       `-- algorithm_comparison.png
+|
+|-- requirements.txt             # Python dependencies
+`-- README.md                    # This file
 ```
 
-## ðŸ› ï¸ Configuration
+## Configuration
 
 Edit `config.py` to customize:
 
@@ -141,7 +141,7 @@ Edit `config.py` to customize:
 - **Reward Weights**: Deadhead costs, unused bus penalties, chain bonuses
 - **Algorithm Hyperparameters**: Learning rates, network architectures, training episodes
 
-## ðŸ† Algorithm Comparison
+## Algorithm Comparison
 
 | Algorithm | Type | Key Features | Best For |
 |-----------|------|--------------|----------|
@@ -150,7 +150,7 @@ Edit `config.py` to customize:
 | **REINFORCE** | Policy Gradient | Simple, direct optimization | Understanding baselines |
 | **A2C** | Actor-Critic | Advantage estimation, shared features | Reduced variance, faster convergence |
 
-## ðŸ“ˆ Results
+## Results
 
 The system learns to:
 - **Minimize Fleet Size**: Use fewer buses while meeting all trip demands
@@ -165,7 +165,7 @@ The system learns to:
 - **Training Stability**: Convergence speed and consistency
 - **Solution Quality**: Meeting all trip demands with minimal resources
 
-## ðŸ”¬ Technical Details
+## Technical Details
 
 ### Problem Definition
 - **3 Bus Lines**: Different terminals (Terminal1, Terminal2, Terminal3) with varying schedules
@@ -199,7 +199,7 @@ The system learns to:
 
 #### DDQN (Double Deep Q-Network)  
 - **Architecture**: Separate main and target Q-networks
-- **Features**: Experience replay, Îµ-greedy exploration, target network updates
+- **Features**: Experience replay, epsilon-greedy exploration, target network updates
 - **Efficiency**: Sample reuse and stable value estimation
 
 #### REINFORCE
@@ -212,7 +212,7 @@ The system learns to:
 - **Features**: TD advantage estimation, simultaneous policy/value updates
 - **Balance**: Reduced variance while maintaining policy gradient benefits
 
-## ï¿½ Hardware Support
+## Hardware Support
 
 All algorithms automatically detect and utilize available hardware:
 
@@ -221,7 +221,7 @@ All algorithms automatically detect and utilize available hardware:
 - **Device Logging**: Clear indication of hardware being used
 - **Memory Optimization**: Efficient tensor operations and batch processing
 
-## ðŸ“Š Visualization and Analysis
+## Visualization and Analysis
 
 The project generates comprehensive visualizations:
 
@@ -230,7 +230,7 @@ The project generates comprehensive visualizations:
 - **Performance Metrics**: Detailed evaluation statistics
 - **Solution Quality**: Bus usage efficiency and constraint satisfaction
 
-## ï¿½ðŸ“š Documentation
+## Documentation
 
 For detailed documentation, see:
 - Code comments and docstrings in each module
@@ -238,7 +238,7 @@ For detailed documentation, see:
 - Environment dynamics and reward engineering
 - Comparison methodology and metrics
 
-## ðŸ¤ Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
@@ -246,15 +246,15 @@ For detailed documentation, see:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## ðŸ“„ License
+## License
 
 This project is licensed under the MIT License.
 
-## ðŸ“ž Contact
+## Contact
 
 Project Link: [https://github.com/meghkc/RL-ESB](https://github.com/meghkc/RL-ESB)
 
-## ðŸ™ Acknowledgments
+## Acknowledgments
 
 - Built with PyTorch for deep learning and GPU acceleration
 - Inspired by advances in deep reinforcement learning for transportation optimization
