@@ -6,7 +6,28 @@
 
 A comprehensive Deep Reinforcement Learning solution for optimizing electric bus fleet scheduling with multiple state-of-the-art on-policy & off-policy algorithms. This project implements and compares four different RL approaches: **PPO**, **DDQN**, **REINFORCE**, and **A2C** for solving the electric bus scheduling problem.
 
-## 🎯 Features
+## Project Lineage
+
+This repository is inherited from the original project:
+- Source: [https://github.com/meghkc/RL-ESB](https://github.com/meghkc/RL-ESB)
+
+The original codebase provides the baseline RL environment, agents, and training scripts for a synthetic electric bus scheduling setup.
+
+## What Changed In This Repo
+
+This fork extends the original project with dataset-driven scheduling support and related training updates:
+
+- Added `dataArticleJuliette/` support (Montreal transit benchmark instance format).
+- Added `dataset_loader.py` to parse `depots.txt`, `recharge.txt`, `voyages.txt`, and `hlp.txt`.
+- Updated `environment.py` to support both:
+  - `synthetic` mode (original config-based setup), and
+  - `juliette` mode (instance files from `dataArticleJuliette`).
+- Updated `run.py` with CLI options for dataset selection:
+  - `--data-source`, `--dataset-root`, `--dataset-subset`, `--dataset-split`, `--dataset-instance`.
+- Updated PPO flow (`run.py`, `ppo_agent.py`) to use environment-provided valid actions and dynamic state/action dimensions.
+- Updated setup notes so only core PyTorch is required by default (no mandatory `torchvision`/`torchaudio`).
+
+## Features
 
 - **Multi-Algorithm Implementation**: Compare 4 different RL approaches
   - **PPO (Proximal Policy Optimization)**: Stable policy gradient method
@@ -19,12 +40,14 @@ A comprehensive Deep Reinforcement Learning solution for optimizing electric bus
 - **Action Masking**: Intelligent constraint handling for valid bus assignments
 - **Reward Engineering**: Multi-objective optimization (fleet size, deadhead costs, chain bonuses)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
 ```bash
-pip install torch numpy matplotlib pandas
+pip install torch numpy matplotlib pandas tqdm
+# Optional only if your project code needs them:
+# pip install torchvision torchaudio
 ```
 
 ### Installation
@@ -76,39 +99,39 @@ python run_reinforce.py
 python run_a2c.py
 ```
 
-## 📊 Project Structure
+## Project Structure
 
 ```
 RL-ESB/
-├── config.py                    # System configuration and hyperparameters
-├── environment.py               # Bus scheduling environment implementation
-├── 
-├── # Algorithm Implementations
-├── ppo_agent.py                 # Proximal Policy Optimization agent
-├── ddqn_agent.py               # Double Deep Q-Network agent  
-├── reinforce_agent.py          # REINFORCE policy gradient agent
-├── a2c_agent.py                # Advantage Actor-Critic agent
-├──
-├── # Training Scripts  
-├── run.py                      # PPO training and evaluation
-├── run_ddqn.py                 # DDQN training and evaluation
-├── run_reinforce.py            # REINFORCE training and evaluation
-├── run_a2c.py                  # A2C training and evaluation
-├── compare_algorithms.py       # Multi-algorithm comparison and analysis
-├──
-├── data/                       # Results and model storage
-│   ├── *_training.txt          # Training progress logs
-│   ├── *_results.txt           # Evaluation results
-│   ├── *_best_model.pth        # Best trained models
-│   └── figures/                # Training plots and comparisons
-│       ├── *_training_rewards.png
-│       └── algorithm_comparison.png
-├──
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+|-- config.py                    # System configuration and hyperparameters
+|-- environment.py               # Bus scheduling environment implementation
+|
+|-- # Algorithm Implementations
+|-- ppo_agent.py                 # Proximal Policy Optimization agent
+|-- ddqn_agent.py                # Double Deep Q-Network agent
+|-- reinforce_agent.py           # REINFORCE policy gradient agent
+|-- a2c_agent.py                 # Advantage Actor-Critic agent
+|
+|-- # Training Scripts
+|-- run.py                       # PPO training and evaluation
+|-- run_ddqn.py                  # DDQN training and evaluation
+|-- run_reinforce.py             # REINFORCE training and evaluation
+|-- run_a2c.py                   # A2C training and evaluation
+|-- advanced_comparison.py       # Multi-algorithm comparison and analysis
+|
+|-- data/                        # Results and model storage
+|   |-- *_training.txt           # Training progress logs
+|   |-- *_results.txt            # Evaluation results
+|   |-- *_best_model.pth         # Best trained models
+|   `-- figures/                 # Training plots and comparisons
+|       |-- *_training_rewards.png
+|       `-- algorithm_comparison.png
+|
+|-- requirements.txt             # Python dependencies
+`-- README.md                    # This file
 ```
 
-## 🛠️ Configuration
+## Configuration
 
 Edit `config.py` to customize:
 
@@ -118,7 +141,7 @@ Edit `config.py` to customize:
 - **Reward Weights**: Deadhead costs, unused bus penalties, chain bonuses
 - **Algorithm Hyperparameters**: Learning rates, network architectures, training episodes
 
-## 🏆 Algorithm Comparison
+## Algorithm Comparison
 
 | Algorithm | Type | Key Features | Best For |
 |-----------|------|--------------|----------|
@@ -127,7 +150,7 @@ Edit `config.py` to customize:
 | **REINFORCE** | Policy Gradient | Simple, direct optimization | Understanding baselines |
 | **A2C** | Actor-Critic | Advantage estimation, shared features | Reduced variance, faster convergence |
 
-## 📈 Results
+## Results
 
 The system learns to:
 - **Minimize Fleet Size**: Use fewer buses while meeting all trip demands
@@ -142,7 +165,7 @@ The system learns to:
 - **Training Stability**: Convergence speed and consistency
 - **Solution Quality**: Meeting all trip demands with minimal resources
 
-## 🔬 Technical Details
+## Technical Details
 
 ### Problem Definition
 - **3 Bus Lines**: Different terminals (Terminal1, Terminal2, Terminal3) with varying schedules
@@ -176,7 +199,7 @@ The system learns to:
 
 #### DDQN (Double Deep Q-Network)  
 - **Architecture**: Separate main and target Q-networks
-- **Features**: Experience replay, ε-greedy exploration, target network updates
+- **Features**: Experience replay, epsilon-greedy exploration, target network updates
 - **Efficiency**: Sample reuse and stable value estimation
 
 #### REINFORCE
@@ -189,7 +212,7 @@ The system learns to:
 - **Features**: TD advantage estimation, simultaneous policy/value updates
 - **Balance**: Reduced variance while maintaining policy gradient benefits
 
-## � Hardware Support
+## Hardware Support
 
 All algorithms automatically detect and utilize available hardware:
 
@@ -198,7 +221,7 @@ All algorithms automatically detect and utilize available hardware:
 - **Device Logging**: Clear indication of hardware being used
 - **Memory Optimization**: Efficient tensor operations and batch processing
 
-## 📊 Visualization and Analysis
+## Visualization and Analysis
 
 The project generates comprehensive visualizations:
 
@@ -207,7 +230,7 @@ The project generates comprehensive visualizations:
 - **Performance Metrics**: Detailed evaluation statistics
 - **Solution Quality**: Bus usage efficiency and constraint satisfaction
 
-## �📚 Documentation
+## Documentation
 
 For detailed documentation, see:
 - Code comments and docstrings in each module
@@ -215,7 +238,7 @@ For detailed documentation, see:
 - Environment dynamics and reward engineering
 - Comparison methodology and metrics
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
@@ -223,18 +246,19 @@ For detailed documentation, see:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 📞 Contact
+## Contact
 
 Project Link: [https://github.com/meghkc/RL-ESB](https://github.com/meghkc/RL-ESB)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with PyTorch for deep learning and GPU acceleration
 - Inspired by advances in deep reinforcement learning for transportation optimization
 - Algorithm implementations based on seminal papers in RL
 - Thanks to the open-source RL community for foundational work
 - Multi-algorithm comparison methodology for comprehensive evaluation
+
