@@ -17,7 +17,7 @@ The original codebase provides the baseline RL environment, agents, and training
 
 This fork extends the original project with dataset-driven scheduling support and related training updates:
 
-- Added `dataArticleJuliette/` support (Montreal transit benchmark instance format).
+- Added `dataArticleJuliette/` support (Montreal transit benchmark instance format from here https://www.gerad.ca/%7eguyd/mdevsp.html).
 - Added `dataset_loader.py` to parse `depots.txt`, `recharge.txt`, `voyages.txt`, and `hlp.txt`.
 - Updated `environment.py` to support both:
   - `synthetic` mode (original config-based setup), and
