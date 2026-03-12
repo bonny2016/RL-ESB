@@ -17,7 +17,7 @@ The original codebase provides the baseline RL environment, agents, and training
 
 This fork extends the original project with dataset-driven scheduling support and related training updates:
 
-- Added `dataArticleJuliette/` support (Montreal transit benchmark instance format).
+- Added `dataArticleJuliette/` support (Montreal transit benchmark instance format from here https://www.gerad.ca/%7eguyd/mdevsp.html).
 - Added `dataset_loader.py` to parse `depots.txt`, `recharge.txt`, `voyages.txt`, and `hlp.txt`.
 - Updated `environment.py` to support both:
   - `synthetic` mode (original config-based setup), and
@@ -28,6 +28,47 @@ This fork extends the original project with dataset-driven scheduling support an
 - Updated setup notes so only core PyTorch is required by default (no mandatory `torchvision`/`torchaudio`).
 
 Added dataset CLI support so PPO can run on a specific Juliette instance (e.g., python run.py --data-source juliette --dataset-root dataArticleJuliette --dataset-subset A --dataset-split Training --dataset-instance Network9a_22_0).
+
+### Simulator Environment with Juliette Dataset
+
+#### Overview
+
+The core class is `BusSchedulingEnv` in `environment.py`. It models a **sequential assignment problem**: at each step, the agent assigns one of the available buses to the next trip in the timetable (sorted by departure time).
+
+> **Note:** This is a planning/scheduling task, not real-time control. The full timetable is known upfront and the environment is fully deterministic — the agent learns a constructive heuristic that generalizes across problem instances.
+
+#### Observations
+
+Observation vector dimension: `2 + num_buses`
+
+| Index | Meaning | Normalization |
+|-------|---------|---------------|
+| `[0]` | Current trip departure time | `(event_time - op_start) / t_range` → [0, 1] |
+| `[1]` | Bus line ID of the current trip | `(line_idx - 1) / (num_lines - 1)` → [0, 1] |
+| `[2..2+N]` | Per-bus readiness for each of the N buses | `(event_time - (bus.next_available_time + deadhead_to_trip)) / t_range` |
+
+The per-bus readiness is the key signal: **positive** means the bus is available at the trip's origin on time; **negative** means it would arrive late (infeasible without penalty).
+
+#### Juliette Dataset Files
+
+Four files are parsed by `dataset_loader.py`:
+
+| File | Content | Used For |
+|------|---------|---------|
+| `depots.txt` | `depot_node; num_buses` | Initial bus locations |
+| `voyages.txt` | `trip_id; from_node; dep_time; to_node; arr_time; line_id` | Timetable of trips to schedule |
+| `hlp.txt` | `from_node; to_node; travel_time` (precomputed shortest paths) | Deadhead travel times between nodes |
+| `recharge.txt` | Charging station locations | Loaded but not yet factored into reward |
+
+All times are in **minutes from start of day**.
+
+#### Travel Times
+
+The simulator is **fully deterministic** — no stochasticity of any kind:
+
+- **Scheduled trip durations** come directly from `voyages.txt` (arrival − departure). Always fixed.
+- **Deadhead times** are precomputed shortest-path lookups from `hlp.txt`. The same origin → destination pair always yields the same travel time.
+- No Gaussian noise, delay distributions, or traffic perturbations are applied.
 
 ## Features
 
