@@ -49,6 +49,42 @@ Observation vector dimension: `2 + num_buses`
 
 The per-bus readiness is the key signal: **positive** means the bus is available at the trip's origin on time; **negative** means it would arrive late (infeasible without penalty).
 
+#### How Each Step / Decision Point Is Determined
+
+Each environment step corresponds to exactly one trip event from the timetable:
+
+1. Trips are sorted by `(departure_time, line_id)`.
+2. `current_index` points to the next trip to assign.
+3. The agent chooses one bus for that trip.
+4. The environment updates that bus state (`location`, `next_available_time`, `used`) and increments `current_index`.
+5. Episode ends when all trips are assigned.
+
+This means the decision is made at each trip's scheduled departure event (offline planning, not real-time dispatch).
+
+#### Actions (What Are Actions?)
+
+- Action space is discrete: `action in {0, 1, ..., num_buses - 1}`.
+- The selected action is the bus ID assigned to the current trip.
+- Valid-action masking is based on readiness:
+  `bus.next_available_time + deadhead_time_to_trip <= trip.departure_time`.
+- If no bus is feasible, all actions are temporarily allowed and an unavailability penalty is applied when needed.
+
+#### Reward (How Reward Is Defined)
+
+Per step reward in `environment.py`:
+
+`step_reward = -(W_UNUSED_PENALTY * rn + W_DEADHEAD * deadhead_cost + penalty_unavail) + W_REST_REWARD * rk + chain_bonus`
+
+Where:
+- `deadhead_cost`: normalized empty-move cost to reach the trip origin.
+- `penalty_unavail`: `W_UNAVAILABILITY` if chosen bus cannot arrive by departure time; else `0`.
+- `rn`: `1` when selecting a new bus while at least one already-used bus could serve on time; else `0`.
+- `rk`: `1` when reusing an already-used bus that can serve on time; else `0`.
+- `chain_bonus`: `W_CHAIN` when the chosen bus's previous trip is on the same line; else `0`.
+
+Terminal reward at the end of episode:
+- `step_reward += -W_FINAL * num_used_buses`
+
 #### Juliette Dataset Files
 
 Four files are parsed by `dataset_loader.py`:
@@ -59,6 +95,18 @@ Four files are parsed by `dataset_loader.py`:
 | `voyages.txt` | `trip_id; from_node; dep_time; to_node; arr_time; line_id` | Timetable of trips to schedule |
 | `hlp.txt` | `from_node; to_node; travel_time` (precomputed shortest paths) | Deadhead travel times between nodes |
 | `recharge.txt` | Charging station locations | Loaded but not yet factored into reward |
+
+By subset:
+
+| Subset | Instances | Avg services | Services min-max | Avg lines | Avg depots |
+|--------|-----------|--------------|------------------|-----------|------------|
+| A | 500 | 686.41 | 568-893 | 8.0 | 1.0 |
+| B | 500 | 686.41 | 568-893 | 8.0 | 1.0 |
+| C | 500 | 686.41 | 568-893 | 8.0 | 2.0 |
+| D | 500 | 686.41 | 568-893 | 8.0 | 1.0 |
+| E | 500 | 786.71 | 669-880 | 20.0 | 2.0 |
+| F | 200 | 1335.59 | 1152-1474 | 20.0 | 2.0 |
+| G | 50 | 2600.38 | 2374-3115 | 20.0 | - |
 
 All times are in **minutes from start of day**.
 
@@ -304,4 +352,3 @@ Project Link: [https://github.com/meghkc/RL-ESB](https://github.com/meghkc/RL-ES
 - Algorithm implementations based on seminal papers in RL
 - Thanks to the open-source RL community for foundational work
 - Multi-algorithm comparison methodology for comprehensive evaluation
-
