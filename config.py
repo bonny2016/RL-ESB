@@ -24,6 +24,17 @@ DATASET_SUBSET = "A"
 DATASET_SPLIT = "Training"
 DATASET_INSTANCE = "Network9a_22_0"
 
+# Juliette trip-time noise model
+# Peak windows are expressed in minutes from midnight.
+JULIETTE_ADD_TRIP_TIME_NOISE = True
+JULIETTE_TRIP_TIME_NOISE_SEED = 42
+JULIETTE_PEAK_WINDOWS = [
+    (7 * 60, 9 * 60),
+    (16 * 60, 18 * 60),
+]
+JULIETTE_PEAK_DELAY_RANGE = (0.10, 0.30)
+JULIETTE_NORMAL_DELAY_RANGE = (0.00, 0.10)
+
 # Bus line definitions:
 # Two bus lines with loop service:
 # Bus Line 1: Terminal1 (trip: 25 min + rest: 5 min; interval = 30 minutes)

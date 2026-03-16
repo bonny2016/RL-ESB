@@ -9,6 +9,11 @@ from config import (
     BUS_LINES,
     COORDINATES,
     DATASET_INSTANCE,
+    JULIETTE_ADD_TRIP_TIME_NOISE,
+    JULIETTE_NORMAL_DELAY_RANGE,
+    JULIETTE_PEAK_DELAY_RANGE,
+    JULIETTE_PEAK_WINDOWS,
+    JULIETTE_TRIP_TIME_NOISE_SEED,
     DATASET_ROOT,
     DATASET_SPLIT,
     DATASET_SUBSET,
@@ -54,6 +59,7 @@ class BusSchedulingEnv:
         self.recharge_stations: Dict[str, int] = {}
         self.depot_nodes: List[str] = [DEPOT]
         self.deadhead_times: Dict[tuple, int] = {}
+        self.juliette_noise_rng = None
 
         if self.data_source == "juliette":
             self._init_juliette_problem()
@@ -99,10 +105,10 @@ class BusSchedulingEnv:
         self.recharge_stations = problem.recharge_stations
         self.depot_nodes = sorted(problem.depots.keys())
         self.operation_start_min = problem.operation_start_min
-        self.operation_end_min = problem.operation_end_min
-        self.t_range = max(1, self.operation_end_min - self.operation_start_min)
         self.deadhead_times = problem.deadhead_times
         self.max_deadhead_time = max(1, problem.max_deadhead_time)
+        if JULIETTE_ADD_TRIP_TIME_NOISE:
+            self.juliette_noise_rng = np.random.default_rng(JULIETTE_TRIP_TIME_NOISE_SEED)
 
         self.initial_bus_locations = []
         for depot_node, count in sorted(problem.depots.items()):
@@ -111,21 +117,43 @@ class BusSchedulingEnv:
 
         self.timetable = []
         for trip in problem.trips:
+            trip_time = self._get_juliette_trip_time(trip.departure_time, trip.arrival_time)
             self.timetable.append(
                 {
                     "trip_id": trip.trip_id,
                     "time": trip.departure_time,
                     "departure_time": trip.departure_time,
-                    "arrival_time": trip.arrival_time,
+                    "arrival_time": trip.departure_time + trip_time,
+                    "scheduled_arrival_time": trip.arrival_time,
                     "line_id": trip.line_id,
                     "departure_node": trip.departure_node,
                     "arrival_node": trip.arrival_node,
-                    "trip_time": max(0, trip.arrival_time - trip.departure_time),
+                    "trip_time": trip_time,
                     "rest_time": 0,
                 }
             )
 
+        self.operation_end_min = max(event["arrival_time"] for event in self.timetable)
+        self.t_range = max(1, self.operation_end_min - self.operation_start_min)
         self.line_to_index = {line_id: idx + 1 for idx, line_id in enumerate(problem.line_ids)}
+
+    def _get_juliette_trip_time(self, departure_time, scheduled_arrival_time):
+        base_trip_time = max(0, scheduled_arrival_time - departure_time)
+        if not JULIETTE_ADD_TRIP_TIME_NOISE or self.juliette_noise_rng is None:
+            return base_trip_time
+
+        delay_low, delay_high = JULIETTE_NORMAL_DELAY_RANGE
+        if self._is_peak_traffic_time(departure_time):
+            delay_low, delay_high = JULIETTE_PEAK_DELAY_RANGE
+
+        delay_multiplier = self.juliette_noise_rng.uniform(delay_low, delay_high)
+        return max(1, int(math.ceil(base_trip_time * (1.0 + delay_multiplier))))
+
+    def _is_peak_traffic_time(self, departure_time):
+        for start_min, end_min in JULIETTE_PEAK_WINDOWS:
+            if start_min <= departure_time < end_min:
+                return True
+        return False
 
     def _generate_synthetic_timetable(self):
         events = []
@@ -322,6 +350,12 @@ class BusSchedulingEnv:
 
             if self.data_source == "juliette":
                 self.print_and_save(f"Data Source: juliette ({self.instance_label})\n", handle)
+                if JULIETTE_ADD_TRIP_TIME_NOISE:
+                    self.print_and_save(
+                        "Trip-Time Noise: enabled "
+                        f"(peak={JULIETTE_PEAK_DELAY_RANGE}, normal={JULIETTE_NORMAL_DELAY_RANGE})\n",
+                        handle,
+                    )
                 self.print_and_save(f"Depots: {len(self.depot_nodes)}\n", handle)
                 for depot_node in self.depot_nodes:
                     depot_count = self.initial_bus_locations.count(depot_node)
@@ -336,9 +370,16 @@ class BusSchedulingEnv:
                 for event in self.timetable:
                     dep_hr, dep_min = divmod(event["departure_time"], 60)
                     arr_hr, arr_min = divmod(event["arrival_time"], 60)
+                    scheduled_arrival_time = event.get("scheduled_arrival_time")
+                    if scheduled_arrival_time is not None and scheduled_arrival_time != event["arrival_time"]:
+                        sched_hr, sched_min = divmod(scheduled_arrival_time, 60)
+                        arrival_suffix = f" [scheduled {sched_hr:02d}:{sched_min:02d}]"
+                    else:
+                        arrival_suffix = ""
                     self.print_and_save(
                         f"  {event['trip_id']}: {dep_hr:02d}:{dep_min:02d} {event['departure_node']} -> "
-                        f"{arr_hr:02d}:{arr_min:02d} {event['arrival_node']} (Line: {event['line_id']})\n",
+                        f"{arr_hr:02d}:{arr_min:02d} {event['arrival_node']} "
+                        f"(Line: {event['line_id']}, Trip: {event['trip_time']} min){arrival_suffix}\n",
                         handle,
                     )
             else:
@@ -370,10 +411,16 @@ class BusSchedulingEnv:
                     for event in events:
                         dep_hr, dep_min = divmod(event["departure_time"], 60)
                         arr_hr, arr_min = divmod(event["arrival_time"], 60)
+                        scheduled_arrival_time = event.get("scheduled_arrival_time")
+                        if scheduled_arrival_time is not None and scheduled_arrival_time != event["arrival_time"]:
+                            sched_hr, sched_min = divmod(scheduled_arrival_time, 60)
+                            arrival_suffix = f" [scheduled {sched_hr:02d}:{sched_min:02d}]"
+                        else:
+                            arrival_suffix = ""
                         self.print_and_save(
                             f"  {event['trip_id']} | {dep_hr:02d}:{dep_min:02d} {event['departure_node']} -> "
                             f"{arr_hr:02d}:{arr_min:02d} {event['arrival_node']} "
-                            f"(Line: {event['line_id']})\n",
+                            f"(Line: {event['line_id']}, Trip: {event['trip_time']} min){arrival_suffix}\n",
                             handle,
                         )
                 else:
